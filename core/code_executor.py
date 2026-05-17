@@ -67,7 +67,7 @@ _BLOCKED_MODULES: frozenset[str] = frozenset(
 )
 
 #: Execution timeout in seconds.
-_TIMEOUT_SECONDS: int = 30
+_TIMEOUT_SECONDS: int = 90
 
 
 def _make_restricted_import(original_import):
@@ -134,6 +134,12 @@ def _build_namespace(df: pd.DataFrame) -> dict:
         # Active DataFrame (copy so original is never mutated)
         "df": df_copy,
     }
+
+    # Ensure matplotlib is in non-interactive mode and no stale figures
+    # are left open from previous executions — both can cause hangs.
+    plt.ioff()
+    plt.close("all")
+
     return namespace
 
 

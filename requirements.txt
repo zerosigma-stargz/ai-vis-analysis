@@ -1,19 +1,35 @@
+# ── Framework UI ────────────────────────────────────────────────────────────
 streamlit==1.45.1
+
+# ── Data Processing ──────────────────────────────────────────────────────────
 pandas==2.2.3
 numpy==2.2.5
-pyarrow==20.0.0
-openpyxl==3.1.5
-xlrd==2.0.1
+pyarrow==20.0.0          # Parquet support (pandas.read_parquet)
+openpyxl==3.1.5          # XLSX read/write (pandas.read_excel engine + ExcelWriter)
+xlrd==2.0.1              # Legacy XLS read (pandas.read_excel engine='xlrd')
+
+# ── PDF Parsing ───────────────────────────────────────────────────────────────
 pdfplumber==0.11.6
-camelot-py[cv]==0.11.0
-opencv-python-headless==4.11.0.86
+camelot-py[cv]==0.11.0   # Fallback PDF table extraction
+opencv-python-headless==4.11.0.86  # Dependency for camelot-py[cv]
+
+# ── AI ────────────────────────────────────────────────────────────────────────
 google-generativeai==0.8.5
+
+# ── Visualisation ─────────────────────────────────────────────────────────────
 matplotlib==3.10.3
 plotly==6.1.1
-seaborn==0.13.2
+seaborn==0.13.2          # Heatmap support (sns.heatmap) in code_executor sandbox
+# NOTE: kaleido dihapus — tidak kompatibel dengan Python 3.14 di Streamlit Cloud.
+# Download grafik Plotly menggunakan fig.to_html() (HTML interaktif).
+# Download grafik Matplotlib tetap menggunakan savefig() (JPG/PNG/PDF).
+
+# ── Environment ───────────────────────────────────────────────────────────────
 python-dotenv==1.1.0
+
+# ── Testing ───────────────────────────────────────────────────────────────────
 pytest==8.3.5
 pytest-mock==3.14.0
 pytest-cov==6.1.0
 hypothesis==6.131.15
-hypothesis[pandas]
+hypothesis[pandas]       # DataFrame generation strategies for property-based tests

@@ -149,7 +149,8 @@ ATURAN WAJIB:
 10. SEBELUM melakukan operasi numerik (sum, mean, plot, groupby agregasi, dll.) pada kolom bertipe `object`, SELALU bersihkan dulu dengan: `df['kolom'] = pd.to_numeric(df['kolom'].astype(str).str.replace(',', ''), errors='coerce')`. Ini menangani format angka dengan koma ribuan seperti "1,706.18".
 11. Jika kolom yang akan digunakan untuk grafik atau kalkulasi bertipe `object` (bukan `int64`/`float64`), lakukan konversi numerik terlebih dahulu sebelum digunakan.
 12. Untuk heatmap, gunakan `seaborn` (`sns.heatmap()`) dengan Matplotlib figure, atau gunakan `plotly.express.imshow()`. Simpan figure ke variabel `fig`.
-13. Untuk grafik TIME-SERIES (area chart, line chart, bar chart per waktu), WAJIB ikuti pola ini PERSIS:
+13. LARANGAN KERAS untuk Matplotlib: JANGAN PERNAH memanggil `plt.show()`, `plt.savefig()`, `fig.show()`, atau `plt.pause()` — fungsi-fungsi ini memblokir eksekusi dan menyebabkan timeout. Cukup simpan figure ke variabel `fig` dan biarkan sistem yang menampilkannya.
+14. Untuk grafik TIME-SERIES (area chart, line chart, bar chart per waktu), WAJIB ikuti pola ini PERSIS:
     LANGKAH 1 — Siapkan data (gunakan nama kolom SESUAI skema df di atas):
     ```python
     df_plot = df.copy()
@@ -184,6 +185,7 @@ ATURAN WAJIB:
         # ATAU per kuartal: df_ts['label'] = df_ts['NamaKolomTanggal'].dt.to_period('Q').astype(str)
         fig = px.area(df_ts, x='label', y=['NamaKolomNumerik1', 'NamaKolomNumerik2'],
                       title='Judul Grafik')
+        # JANGAN panggil fig.show(), plt.show(), atau plt.savefig() — sistem menampilkan fig secara otomatis
     ```
 14. JANGAN gunakan groupby per bulan jika user meminta per kuartal. Pastikan granularitas agregasi sesuai permintaan user.
 15. WAJIB konversi kolom tanggal ke datetime64 SEBELUM filter atau resample. Gunakan variabel sementara `df_plot = df.copy()` agar `df` asli tidak berubah.
@@ -193,7 +195,8 @@ ATURAN WAJIB:
     - Per bulan: `dt.strftime('%b %Y')` → "Jan 2019", "Feb 2019"
     - Per kuartal: `dt.to_period('Q').astype(str)` → "2019Q1", "2019Q2"
     - DILARANG: `x=df_ts['year']` atau `x=df_ts['col'].dt.year` → akan menghasilkan "2,019" bukan "2019"
-17. Untuk grafik area chart multi-series, gunakan `px.area(df_ts, x='label', y=['kolom1', 'kolom2'])`. Pastikan kolom numerik sudah bersih dari NaN sebelum plotting.
+17. Untuk grafik line chart atau area chart multi-series, gunakan `px.line(df_ts, x='label', y=['kolom1', 'kolom2'])` atau `px.area(...)`. Pastikan kolom numerik sudah bersih dari NaN sebelum plotting.
+18. LARANGAN KERAS — fungsi yang menyebabkan timeout: JANGAN PERNAH memanggil `plt.show()`, `plt.savefig()`, `fig.show()`, `plt.pause()`, atau `plt.waitforbuttonpress()`. Cukup simpan figure ke variabel `fig`.
 
 SKEMA DATAFRAME AKTIF:
 {df_schema}
@@ -249,6 +252,141 @@ FORMAT OUTPUT:
         return ""
 
     # ------------------------------------------------------------------
+    # Task 7.5 — Chart insight generation
+    # ------------------------------------------------------------------
+
+    def generate_chart_insight(
+        self,
+        prompt: str,
+        df_schema: dict,
+        chart_type: str = "",
+    ) -> tuple[Optional[dict], Optional[str]]:
+        """Generate a structured insight for a rendered chart.
+
+        Calls Gemini AI to produce three sections in Indonesian:
+        - **tujuan**: the purpose / goal of the chart
+        - **deskripsi**: description of patterns, trends, or key findings
+        - **tips**: actionable insight tips for the user
+
+        Parameters
+        ----------
+        prompt : str
+            The original user prompt that triggered the chart creation.
+        df_schema : dict
+            Schema of the active DataFrame (columns, dtypes, shape, sample).
+        chart_type : str, optional
+            A hint about the chart type (e.g. "bar chart", "line chart").
+
+        Returns
+        -------
+        tuple[dict | None, str | None]
+            ``(insight_dict, None)`` on success, where *insight_dict* has keys
+            ``"tujuan"``, ``"deskripsi"``, and ``"tips"``.
+            ``(None, error_message)`` on failure.
+        """
+        # Extract only the columns actually mentioned or relevant to the user's prompt
+        # so the insight stays focused on what the user asked for.
+        all_columns = df_schema.get("columns", [])
+        dtypes = df_schema.get("dtypes", {})
+        sample = df_schema.get("sample", [])
+
+        # Build a compact schema string — only column names and types
+        schema_lines = [f"  - {col} ({dtypes.get(col, 'unknown')})" for col in all_columns]
+        schema_str = "\n".join(schema_lines)
+
+        # Build a compact sample string (max 2 rows, no index)
+        sample_str = ""
+        if sample:
+            sample_str = "\nContoh data (2 baris pertama):\n"
+            for row in sample[:2]:
+                sample_str += "  " + ", ".join(f"{k}={v}" for k, v in row.items()) + "\n"
+
+        chart_label = chart_type if chart_type else "grafik"
+
+        system_prompt = (
+            "Kamu adalah analis data senior yang ahli membaca grafik dan data.\n\n"
+            "KONTEKS:\n"
+            f"Pengguna meminta: \"{prompt}\"\n"
+            f"Tipe grafik: {chart_label}\n\n"
+            "Kolom-kolom dalam DataFrame:\n"
+            f"{schema_str}"
+            f"{sample_str}\n"
+            "TUGAS:\n"
+            "Berikan analisis grafik yang SPESIFIK dan FOKUS pada kolom/variabel yang "
+            "benar-benar digunakan dalam permintaan pengguna di atas. "
+            "Jangan bahas kolom yang tidak relevan dengan permintaan.\n\n"
+            "ATURAN KETAT:\n"
+            "1. Respons HANYA berupa objek JSON murni — tidak ada teks, penjelasan, "
+            "atau markdown di luar JSON.\n"
+            "2. Gunakan bahasa Indonesia yang natural dan mudah dipahami.\n"
+            "3. Sebutkan nama kolom/variabel yang spesifik dalam setiap bagian.\n"
+            "4. Hindari kalimat generik seperti 'grafik ini menampilkan data'.\n\n"
+            "FORMAT OUTPUT (hanya JSON ini, tidak ada yang lain):\n"
+            "{\n"
+            '  "tujuan": "1-2 kalimat tentang TUJUAN spesifik grafik ini berdasarkan '
+            'permintaan pengguna dan kolom yang digunakan",\n'
+            '  "deskripsi": "2-3 kalimat mendeskripsikan ISI grafik: pola, tren, atau '
+            'perbandingan yang terlihat dari kolom-kolom yang ditampilkan",\n'
+            '  "tips": [\n'
+            '    "tip 1 yang actionable dan spesifik terhadap kolom/data yang digunakan",\n'
+            '    "tip 2 saran analisis lanjutan yang relevan",\n'
+            '    "tip 3 wawasan tambahan yang berguna"\n'
+            "  ]\n"
+            "}"
+        )
+
+        try:
+            response = self.model.generate_content(system_prompt)
+            raw_text = response.text.strip()
+
+            import json
+
+            # --- Strategy 1: strip markdown fences if present ---
+            json_pattern = re.compile(r"```(?:json)?\s*\n?(.*?)```", re.DOTALL)
+            json_match = json_pattern.search(raw_text)
+            if json_match:
+                json_str = json_match.group(1).strip()
+            else:
+                # --- Strategy 2: find the outermost { ... } block ---
+                brace_start = raw_text.find("{")
+                brace_end = raw_text.rfind("}")
+                if brace_start != -1 and brace_end != -1 and brace_end > brace_start:
+                    json_str = raw_text[brace_start : brace_end + 1]
+                else:
+                    json_str = raw_text
+
+            insight = json.loads(json_str)
+
+            # Validate required keys
+            required_keys = {"tujuan", "deskripsi", "tips"}
+            if not required_keys.issubset(insight.keys()):
+                missing = required_keys - set(insight.keys())
+                return None, f"Respons AI tidak lengkap, kunci yang hilang: {missing}"
+
+            # Normalise: ensure string values are plain strings (not nested JSON)
+            for key in ("tujuan", "deskripsi"):
+                val = insight.get(key, "")
+                if not isinstance(val, str):
+                    insight[key] = str(val)
+
+            # Normalise tips to a flat list of strings
+            tips = insight.get("tips", [])
+            if isinstance(tips, str):
+                tips = [tips]
+            insight["tips"] = [str(t) for t in tips if t]
+
+            return insight, None
+
+        except google.api_core.exceptions.InvalidArgument:
+            return None, "INVALID_KEY: API Key tidak valid. Periksa kembali Gemini API Key Anda."
+
+        except google.api_core.exceptions.ResourceExhausted:
+            return None, "QUOTA_EXHAUSTED: Kuota Gemini API Key Anda telah habis. Masukkan API Key baru di sidebar untuk melanjutkan."
+
+        except Exception as e:  # noqa: BLE001
+            return None, f"Error menghasilkan insight: {str(e)}"
+
+    # ------------------------------------------------------------------
     # Task 7.4 — Main code generation method
     # ------------------------------------------------------------------
 
@@ -301,7 +439,7 @@ FORMAT OUTPUT:
             return None, "API Key tidak valid. Periksa kembali Gemini API Key Anda."
 
         except google.api_core.exceptions.ResourceExhausted:
-            return None, "Kuota API habis. Coba lagi nanti."
+            return None, "QUOTA_EXHAUSTED: Kuota Gemini API Key Anda telah habis. Masukkan API Key baru di sidebar untuk melanjutkan."
 
         except Exception as e:  # noqa: BLE001
             return None, f"Error komunikasi dengan Gemini AI: {str(e)}"

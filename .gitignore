@@ -4,37 +4,50 @@
 .env.*
 secrets.toml
 .streamlit/secrets.toml
+# Jangan commit file ini — berisi API key aktual
+# Gunakan .env.example sebagai template (aman di-commit)
 
 # ── Python cache & build ────────────────────────────────────────────────────
 __pycache__/
 *.pyc
 *.pyo
 *.pyd
+*.pyw
 *.egg-info/
 dist/
 build/
 *.egg
+*.whl
+*.so
+*.pdb
 
 # ── Virtual environments ────────────────────────────────────────────────────
 .venv/
 venv/
 env/
 ENV/
+.virtualenv/
+Pipfile.lock
 
 # ── Testing & coverage ──────────────────────────────────────────────────────
 .pytest_cache/
 htmlcov/
 .coverage
+.coverage.*
 coverage.xml
 *.cover
+.tox/
+.nox/
 
 # ── IDE & editor ────────────────────────────────────────────────────────────
 .vscode/
 .idea/
 *.swp
 *.swo
+*~
 .DS_Store
 Thumbs.db
+desktop.ini
 
 # ── Jupyter ─────────────────────────────────────────────────────────────────
 .ipynb_checkpoints/
@@ -44,6 +57,44 @@ Thumbs.db
 *.log
 *.tmp
 *.temp
+*.bak
+*.orig
 
-# ── Kiro IDE internal ───────────────────────────────────────────────────────
+# ── Dokumentasi internal (jangan di-publish ke GitHub) ──────────────────────
+# Hanya README.md yang boleh publik
+DESIGN_UPDATES.md
+FILE_CHECKLIST.md
+GITHUB_UPLOAD_GUIDE.md
+REBRANDING_SUMMARY.md
+SECURITY_CHECKLIST.md
+
+# ── Data files yang mungkin berisi data sensitif ────────────────────────────
+# Uncomment baris di bawah jika Anda tidak ingin commit file data besar
+# *.csv
+# *.xlsx
+# *.xls
+# *.parquet
+# *.json
+# *.pdf
+# Catatan: tests/fixtures/*.csv AMAN di-commit (data dummy, bukan data nyata)
+
+# ── Kiro IDE internal (exclude semua) ──────────────────────────────────────
+# Seluruh folder .kiro dikecualikan — berisi konfigurasi IDE lokal,
+# specs desain internal, dan settings yang tidak relevan untuk publik
 .kiro/
+
+# ── Streamlit ────────────────────────────────────────────────────────────────
+# secrets.toml berisi API keys — JANGAN di-commit
+.streamlit/secrets.toml
+# config.toml AMAN di-commit (tidak berisi secrets)
+# !.streamlit/config.toml
+
+# ── OS & system files ────────────────────────────────────────────────────────
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+desktop.ini

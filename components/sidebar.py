@@ -35,6 +35,48 @@ from core.gemini_client import GeminiClient
 
 
 # ---------------------------------------------------------------------------
+# Error type prefixes returned by GeminiClient
+# ---------------------------------------------------------------------------
+
+_ERR_QUOTA = "QUOTA_EXHAUSTED:"
+_ERR_INVALID_KEY = "INVALID_KEY:"
+
+
+def _is_api_key_error(error_msg: str) -> bool:
+    """Return True if the error is a quota-exhausted or invalid-key error."""
+    return error_msg.startswith(_ERR_QUOTA) or error_msg.startswith(_ERR_INVALID_KEY)
+
+
+def _show_api_key_error(error_msg: str) -> None:
+    """Display a prominent warning and clear the stored API key.
+
+    When the quota is exhausted or the key is invalid, the API key is removed
+    from session state so the input field becomes active again and the user
+    can enter a new key immediately.
+    """
+    if error_msg.startswith(_ERR_QUOTA):
+        st.error(
+            "🔑 **Kuota Gemini API Key Habis**\n\n"
+            "Kuota penggunaan API Key Anda telah habis. "
+            "Silakan masukkan **API Key baru** di kolom *Gemini API Key* di atas "
+            "untuk melanjutkan sesi analisis.",
+            icon="⚠️",
+        )
+    elif error_msg.startswith(_ERR_INVALID_KEY):
+        st.error(
+            "🔑 **Gemini API Key Tidak Valid**\n\n"
+            "API Key yang Anda masukkan tidak dikenali oleh Google. "
+            "Silakan periksa dan masukkan **API Key yang benar** "
+            "di kolom *Gemini API Key* di atas.",
+            icon="❌",
+        )
+
+    # Clear the stored key so the password input becomes editable again
+    # and the user is prompted to enter a new one.
+    st.session_state.api_key = ""
+
+
+# ---------------------------------------------------------------------------
 # Task 12.1 — API Key input
 # ---------------------------------------------------------------------------
 
@@ -180,6 +222,12 @@ def _handle_prompt_submission() -> None:
             code, error_msg = client.generate_code(prompt=prompt, df_schema=df_schema)
 
         if error_msg:
+            # Check for quota-exhausted / invalid-key errors first — these
+            # need a prominent UI notification and the key must be cleared.
+            if _is_api_key_error(error_msg):
+                _show_api_key_error(error_msg)
+                return
+
             # Generation failed — record an error assistant message.
             _append_messages(
                 prompt=prompt,
@@ -193,12 +241,41 @@ def _handle_prompt_submission() -> None:
         with st.spinner("Mengeksekusi kode…"):
             result = code_executor.execute(code=code, df=df)
 
+        # If the output is a figure, generate AI insight for it.
+        chart_insight: dict | None = None
+        chart_insight_error: str | None = None
+
+        if result["output_type"] == "figure":
+            with st.spinner("Menganalisis grafik…"):
+                # Detect chart type hint from the prompt
+                chart_type_hint = ""
+                prompt_lower = prompt.lower()
+                for keyword in ("bar", "line", "scatter", "pie", "box", "heatmap", "area", "histogram"):
+                    if keyword in prompt_lower:
+                        chart_type_hint = keyword + " chart"
+                        break
+
+                chart_insight, chart_insight_error = client.generate_chart_insight(
+                    prompt=prompt,
+                    df_schema=df_schema,
+                    chart_type=chart_type_hint,
+                )
+
+            # If insight generation hit a quota/key error, show the warning
+            # but still display the chart — the insight panel will show a
+            # fallback message.
+            if chart_insight_error and _is_api_key_error(chart_insight_error):
+                _show_api_key_error(chart_insight_error)
+                chart_insight_error = "Analisis grafik tidak tersedia karena API Key bermasalah."
+
         # Append user message and AI response to chat history.
         _append_messages(
             prompt=prompt,
             user_content=prompt,
             assistant_content_type=result["output_type"],
             assistant_content=result["data"],
+            chart_insight=chart_insight,
+            chart_insight_error=chart_insight_error,
         )
 
         # Update the active DataFrame if the output is a transformed DataFrame.
@@ -216,6 +293,8 @@ def _append_messages(
     user_content: str,
     assistant_content_type: str,
     assistant_content: Any,
+    chart_insight: dict | None = None,
+    chart_insight_error: str | None = None,
 ) -> None:
     """Append a user message and an assistant message to chat history.
 
@@ -229,6 +308,10 @@ def _append_messages(
         One of ``"dataframe"``, ``"figure"``, ``"text"``, or ``"error"``.
     assistant_content:
         The actual output data (DataFrame, Figure, str, etc.).
+    chart_insight:
+        AI-generated insight dict for figure outputs (keys: tujuan, deskripsi, tips).
+    chart_insight_error:
+        Error message if insight generation failed.
     """
     now: str = datetime.now().isoformat()
 
@@ -247,15 +330,20 @@ def _append_messages(
     )
 
     # Assistant message.
-    st.session_state.chat_history.append(
-        {
-            "role": "assistant",
-            "content_type": assistant_content_type,
-            "content": assistant_content,
-            "timestamp": datetime.now().isoformat(),
-            "prompt": prompt,
-        }
-    )
+    assistant_msg: dict[str, Any] = {
+        "role": "assistant",
+        "content_type": assistant_content_type,
+        "content": assistant_content,
+        "timestamp": datetime.now().isoformat(),
+        "prompt": prompt,
+    }
+
+    # Attach chart insight data if this is a figure response.
+    if assistant_content_type == "figure":
+        assistant_msg["chart_insight"] = chart_insight
+        assistant_msg["chart_insight_error"] = chart_insight_error
+
+    st.session_state.chat_history.append(assistant_msg)
 
 
 # ---------------------------------------------------------------------------
