@@ -271,3 +271,5 @@ Aplikasi menggunakan model **`gemini-2.5-flash`** yang dioptimalkan untuk:
 ## 📝 Lisensi
 
 Proyek ini dikembangkan untuk keperluan analisis data internal. Silakan sesuaikan lisensi sesuai kebutuhan Anda.
+#   a i - v i s - a n a l y s i s  
+ 
