@@ -120,13 +120,13 @@ def render_summary(df: pd.DataFrame, filename: str) -> None:
     # ------------------------------------------------------------------ #
     # 1. Active filename                                                   #
     # ------------------------------------------------------------------ #
-    st.subheader("📄 File Aktif")
+    st.subheader("File Aktif")
     st.write(filename)
 
     # ------------------------------------------------------------------ #
     # 2. Shape — rows and columns                                          #
     # ------------------------------------------------------------------ #
-    st.subheader("📐 Dimensi Data")
+    st.subheader("Dimensi Data")
     col_rows, col_cols = st.columns(2)
     col_rows.metric("Jumlah Baris", df.shape[0])
     col_cols.metric("Jumlah Kolom", df.shape[1])
@@ -134,13 +134,13 @@ def render_summary(df: pd.DataFrame, filename: str) -> None:
     # ------------------------------------------------------------------ #
     # 3. Preview — first 5 rows                                            #
     # ------------------------------------------------------------------ #
-    st.subheader("👀 Preview Data (5 Baris Pertama)")
+    st.subheader("Preview Data (5 Baris Pertama)")
     st.dataframe(df.head(5), width="stretch")
 
     # ------------------------------------------------------------------ #
     # 4. Data types per column                                             #
     # ------------------------------------------------------------------ #
-    st.subheader("🔢 Tipe Data Kolom")
+    st.subheader("Tipe Data Kolom")
     dtype_df = pd.DataFrame(
         {"Kolom": df.dtypes.index, "Tipe Data": df.dtypes.values.astype(str)}
     ).reset_index(drop=True)
@@ -149,7 +149,7 @@ def render_summary(df: pd.DataFrame, filename: str) -> None:
     # ------------------------------------------------------------------ #
     # 5. Null values per column                                            #
     # ------------------------------------------------------------------ #
-    st.subheader("🕳️ Nilai Null per Kolom")
+    st.subheader("Nilai Null per Kolom")
     null_counts = df.isnull().sum()
     null_df = pd.DataFrame(
         {"Kolom": null_counts.index, "Jumlah Null": null_counts.values}
@@ -159,28 +159,28 @@ def render_summary(df: pd.DataFrame, filename: str) -> None:
     # ------------------------------------------------------------------ #
     # 6. Duplicate rows                                                    #
     # ------------------------------------------------------------------ #
-    st.subheader("🔁 Baris Duplikat")
+    st.subheader("Baris Duplikat")
     n_duplicates = int(df.duplicated().sum())
     st.write(f"Jumlah baris duplikat: **{n_duplicates}**")
 
     # ------------------------------------------------------------------ #
     # 7. Descriptive statistics                                            #
     # ------------------------------------------------------------------ #
-    st.subheader("📊 Statistik Deskriptif")
+    st.subheader("Statistik Deskriptif")
     numeric_cols = df.select_dtypes(include="number")
     if not numeric_cols.empty:
         stats_df = get_descriptive_stats(df)
         st.dataframe(stats_df, width="stretch")
     else:
-        st.info("ℹ️ Tidak ada kolom numerik — statistik deskriptif tidak tersedia.")
+        st.info("Tidak ada kolom numerik - statistik deskriptif tidak tersedia.")
 
     # ------------------------------------------------------------------ #
     # 8. Outliers                                                          #
     # ------------------------------------------------------------------ #
-    st.subheader("⚠️ Outlier (Metode IQR)")
+    st.subheader("Outlier (Metode IQR)")
     if numeric_cols.empty:
         st.info(
-            "ℹ️ Deteksi outlier tidak tersedia karena DataFrame tidak memiliki "
+            "Deteksi outlier tidak tersedia karena DataFrame tidak memiliki "
             "kolom numerik."
         )
     else:
@@ -190,16 +190,16 @@ def render_summary(df: pd.DataFrame, filename: str) -> None:
                 with st.expander(f"Kolom: **{col}** — {len(values)} outlier"):
                     st.write(values)
         else:
-            st.write("✅ Tidak ditemukan outlier pada kolom numerik.")
+            st.write("Tidak ditemukan outlier pada kolom numerik.")
 
     # ------------------------------------------------------------------ #
     # 9. Currency columns                                                  #
     # ------------------------------------------------------------------ #
-    st.subheader("💰 Kolom Mata Uang Terdeteksi")
+    st.subheader("Kolom Mata Uang Terdeteksi")
     currency_cols = detect_currency_columns(df)
     if currency_cols:
         for col in currency_cols:
             examples = df[col].dropna().head(3).tolist()
             st.write(f"**{col}** — Contoh nilai: {examples}")
     else:
-        st.info("ℹ️ Tidak ada kolom mata uang yang terdeteksi.")
+        st.info("Tidak ada kolom mata uang yang terdeteksi.")
