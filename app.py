@@ -70,7 +70,7 @@ st.markdown(
     footer { visibility: hidden; }
     header[data-testid="stHeader"] {
         background: #ffffff !important;
-        border-bottom: 1px solid #f1f5f9;
+        border-bottom: 1px solid #e2e8f0;
     }
     [data-testid="stToolbar"] { visibility: hidden; }
 
@@ -80,28 +80,30 @@ st.markdown(
         max-width: 1100px;
     }
 
-    /* Sidebar - clean white */
+    /* Sidebar - light blue tinted gradient */
     [data-testid="stSidebar"] {
-        background: #ffffff;
-        border-right: 1px solid #e2e8f0;
+        background: linear-gradient(180deg, #f8fafc 0%, #f0f7ff 100%);
+        border-right: 2px solid #1e40af;
     }
 
     /* Buttons */
     .stButton > button[kind="primary"] {
-        background: #4f46e5;
+        background: linear-gradient(135deg, #1a365d 0%, #1e40af 100%);
         border: none;
         color: #ffffff;
         font-weight: 600;
         border-radius: 8px;
         padding: 0.5rem 1.2rem;
-        transition: background 0.2s ease;
+        transition: all 0.2s ease;
     }
     .stButton > button[kind="primary"]:hover {
-        background: #4338ca;
+        background: linear-gradient(135deg, #1e40af 0%, #2563eb 100%);
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(30, 64, 175, 0.2);
     }
 
     .stButton > button[kind="secondary"] {
-        border: 1px solid #e2e8f0;
+        border: 1px solid #cbd5e1;
         border-radius: 8px;
         font-weight: 500;
         color: #374151;
@@ -109,8 +111,8 @@ st.markdown(
         transition: all 0.2s ease;
     }
     .stButton > button[kind="secondary"]:hover {
-        border-color: #4f46e5;
-        color: #4f46e5;
+        border-color: #1e40af;
+        color: #1e40af;
     }
 
     /* Alerts */
@@ -147,8 +149,8 @@ st.markdown(
 
     /* Metric */
     [data-testid="stMetric"] {
-        background: #f8fafc;
-        border: 1px solid #e2e8f0;
+        background: #f0f7ff;
+        border: 1px solid #bfdbfe;
         border-radius: 8px;
         padding: 0.6rem 0.8rem;
     }
@@ -161,8 +163,8 @@ st.markdown(
     }
     [data-testid="stTextInput"] input:focus,
     [data-testid="stTextArea"] textarea:focus {
-        border-color: #4f46e5 !important;
-        box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.1) !important;
+        border-color: #1e40af !important;
+        box-shadow: 0 0 0 2px rgba(30, 64, 175, 0.1) !important;
     }
 
     /* File uploader */
@@ -172,14 +174,14 @@ st.markdown(
         background: #f9fafb !important;
     }
     [data-testid="stFileUploader"] section:hover {
-        border-color: #4f46e5 !important;
-        background: #f5f3ff !important;
+        border-color: #1e40af !important;
+        background: #f0f7ff !important;
     }
 
     /* Tabs */
     [data-testid="stTabs"] button[aria-selected="true"] {
-        border-bottom: 2px solid #4f46e5 !important;
-        color: #4f46e5 !important;
+        border-bottom: 2px solid #1e40af !important;
+        color: #1e40af !important;
     }
     </style>
     """,
@@ -241,24 +243,25 @@ def init_session_state() -> None:
 
 
 def _render_app_header() -> None:
-    """Render a minimal app header."""
+    """Render a professional app header with mountain blue accent."""
     st.markdown(
         """
         <div style="
-            border-bottom: 1px solid #e2e8f0;
-            padding: 0.6rem 0 1rem 0;
+            background: linear-gradient(135deg, #1a365d 0%, #1e40af 50%, #0369a1 100%);
+            padding: 1rem 1.5rem;
+            border-radius: 10px;
             margin-bottom: 1.2rem;
         ">
             <h1 style="
-                font-size: 1.5rem;
+                font-size: 1.4rem;
                 font-weight: 700;
-                color: #1e293b;
+                color: #ffffff;
                 margin: 0;
                 line-height: 1.3;
             ">AI Data Analysis & Visualization</h1>
             <p style="
-                font-size: 0.85rem;
-                color: #64748b;
+                font-size: 0.8rem;
+                color: rgba(255, 255, 255, 0.8);
                 margin: 0.2rem 0 0 0;
             ">Analisis data dan buat visualisasi dengan instruksi bahasa alami</p>
         </div>

@@ -23,22 +23,22 @@ def _render_hero() -> None:
     """Render the hero / headline section."""
     st.markdown(
         """
-        <div style="text-align: center; padding: 2rem 1rem 1.5rem 1rem;">
+        <div style="text-align: center; padding: 2.5rem 1rem 1.5rem 1rem;">
             <h1 style="
-                font-size: 2rem;
+                font-size: 2.2rem;
                 font-weight: 700;
-                color: #1e293b;
-                margin-bottom: 0.5rem;
-                line-height: 1.3;
+                color: #0f172a;
+                margin-bottom: 0.6rem;
+                line-height: 1.2;
             ">Analisis Data dengan AI</h1>
             <p style="
-                font-size: 1rem;
-                color: #64748b;
-                max-width: 560px;
+                font-size: 1.05rem;
+                color: #475569;
+                max-width: 580px;
                 margin: 0 auto;
-                line-height: 1.6;
+                line-height: 1.7;
             ">
-                Unggah file data, ketik instruksi dalam bahasa alami,
+                Unggah file data Anda, ketik instruksi dalam bahasa alami,
                 dan dapatkan visualisasi serta insight secara otomatis.
             </p>
         </div>
@@ -51,32 +51,32 @@ def _render_capability_cards() -> None:
     """Render three capability cards in a single row."""
     cols = st.columns(3, gap="medium")
     cards = [
-        ("Inspeksi Otomatis", "Statistik, outlier, dan tipe data terdeteksi seketika."),
-        ("Chat AI", "Transformasi data dan buat grafik dengan instruksi teks."),
-        ("Visualisasi", "Bar, Line, Scatter, Pie, Box Plot, Heatmap, dan lainnya."),
+        ("Inspeksi Otomatis", "Statistik deskriptif, deteksi outlier, nilai null, dan tipe data terdeteksi seketika tanpa konfigurasi."),
+        ("Chat AI", "Transformasi DataFrame, agregasi, filter, dan resampling time-series dengan instruksi bahasa alami."),
+        ("Visualisasi Grafik", "Bar, Line, Area, Scatter, Pie, Box Plot, Heatmap dirender interaktif via Plotly dan Matplotlib."),
     ]
     for col, (title, desc) in zip(cols, cards):
         with col:
             st.markdown(
                 f"""
                 <div style="
-                    background: #f8fafc;
+                    background: #ffffff;
                     border: 1px solid #e2e8f0;
-                    border-radius: 10px;
-                    padding: 1.2rem;
-                    text-align: center;
-                    min-height: 100px;
+                    border-top: 3px solid #1e40af;
+                    border-radius: 8px;
+                    padding: 1.3rem 1.1rem;
+                    min-height: 120px;
                 ">
                     <div style="
                         font-weight: 600;
-                        font-size: 0.9rem;
-                        color: #1e293b;
-                        margin-bottom: 0.3rem;
+                        font-size: 0.92rem;
+                        color: #0f172a;
+                        margin-bottom: 0.4rem;
                     ">{title}</div>
                     <div style="
                         font-size: 0.8rem;
-                        color: #64748b;
-                        line-height: 1.5;
+                        color: #475569;
+                        line-height: 1.55;
                     ">{desc}</div>
                 </div>
                 """,
@@ -88,14 +88,14 @@ def _render_format_badges() -> None:
     """Render supported file format badges."""
     formats = ["CSV", "TSV", "JSON", "JSONL", "PDF", "Parquet", "XLSX", "XLS"]
     badges = " ".join(
-        f'<span style="background:#f1f5f9; color:#475569; font-size:0.72rem; '
-        f'font-weight:600; padding:0.2rem 0.6rem; border-radius:4px; '
-        f'display:inline-block; margin:0.15rem;">{f}</span>'
+        f'<span style="background:#eff6ff; color:#1e40af; font-size:0.72rem; '
+        f'font-weight:600; padding:0.25rem 0.6rem; border-radius:4px; '
+        f'display:inline-block; margin:0.12rem;">{f}</span>'
         for f in formats
     )
     st.markdown(
-        f'<div style="text-align:center; margin: 0.8rem 0;">'
-        f'<span style="font-size:0.78rem; color:#64748b; font-weight:500;">'
+        f'<div style="text-align:center; margin: 1rem 0;">'
+        f'<span style="font-size:0.8rem; color:#475569; font-weight:500;">'
         f'Format didukung:</span> {badges}'
         f'<span style="font-size:0.72rem; color:#94a3b8; margin-left:0.5rem;">'
         f'Maks. 200 MB</span></div>',
@@ -128,29 +128,37 @@ def _render_uploader() -> None:
 def _render_workflow_steps() -> None:
     """Render a compact 3-step workflow guide."""
     st.markdown(
-        """
-        <div style="margin: 1rem 0; text-align: center;">
-            <p style="font-size: 0.78rem; color: #94a3b8; text-transform: uppercase;
-               letter-spacing: 0.05em; font-weight: 600; margin-bottom: 0.8rem;">
-               Cara Penggunaan</p>
-        </div>
-        """,
+        '<p style="text-align:center; font-size:0.75rem; color:#94a3b8; '
+        'text-transform:uppercase; letter-spacing:0.06em; font-weight:600; '
+        'margin-bottom:0.8rem;">Cara Penggunaan</p>',
         unsafe_allow_html=True,
     )
     cols = st.columns(3, gap="medium")
     steps = [
-        ("1. Unggah File", "CSV, Excel, JSON, PDF, atau Parquet"),
-        ("2. Eksplorasi", "Statistik dan outlier terdeteksi otomatis"),
-        ("3. Chat AI", "Ketik instruksi untuk grafik dan transformasi"),
+        ("1", "Unggah File", "CSV, Excel, JSON, PDF, atau Parquet"),
+        ("2", "Eksplorasi", "Statistik dan outlier terdeteksi otomatis"),
+        ("3", "Chat AI", "Ketik instruksi untuk grafik dan transformasi"),
     ]
-    for col, (title, desc) in zip(cols, steps):
+    for col, (num, title, desc) in zip(cols, steps):
         with col:
             st.markdown(
                 f"""
                 <div style="text-align: center;">
-                    <div style="font-weight: 600; font-size: 0.85rem; color: #1e293b;
-                         margin-bottom: 0.2rem;">{title}</div>
-                    <div style="font-size: 0.75rem; color: #64748b;">{desc}</div>
+                    <div style="
+                        width: 2rem; height: 2rem;
+                        background: linear-gradient(135deg, #1a365d, #1e40af);
+                        border-radius: 50%;
+                        display: inline-flex;
+                        align-items: center;
+                        justify-content: center;
+                        color: white;
+                        font-weight: 700;
+                        font-size: 0.85rem;
+                        margin-bottom: 0.5rem;
+                    ">{num}</div>
+                    <div style="font-weight: 600; font-size: 0.85rem; color: #0f172a;
+                         margin-bottom: 0.15rem;">{title}</div>
+                    <div style="font-size: 0.76rem; color: #64748b;">{desc}</div>
                 </div>
                 """,
                 unsafe_allow_html=True,
@@ -197,7 +205,7 @@ def render() -> None:
 
     # -- Footer
     st.markdown(
-        '<p style="text-align:center; font-size:0.7rem; color:#94a3b8; margin-top:1.5rem;">'
-        'Powered by Gemini 2.5 Flash</p>',
+        '<p style="text-align:center; font-size:0.72rem; color:#94a3b8; margin-top:2rem;">'
+        'Powered by Gemini 2.5 Flash | Python | Streamlit | Pandas | Plotly</p>',
         unsafe_allow_html=True,
     )

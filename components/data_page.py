@@ -69,7 +69,7 @@ def render() -> None:
 
     col_title, col_help = st.columns([0.92, 0.08])
     with col_title:
-        st.subheader("Analisis & Visualisasi AI")
+        st.subheader("Analisis & Visualisasi")
     with col_help:
         st.button(
             "?",
@@ -79,9 +79,8 @@ def render() -> None:
         )
 
     st.caption(
-        "Gunakan Gemini AI untuk mentransformasi data, membuat grafik, dan menganalisis "
-        "DataFrame secara interaktif. Ketik instruksi di kotak chat di bawah halaman, "
-        "lalu tekan Enter."
+        "Gunakan chat AI untuk mentransformasi data, membuat grafik, dan menganalisis "
+        "DataFrame secara interaktif. Ketik instruksi di kotak chat di bawah halaman."
     )
 
     # ------------------------------------------------------------------ #

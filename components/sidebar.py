@@ -20,7 +20,7 @@ def render() -> None:
     """Render the sidebar with API Key input and session controls."""
     with st.sidebar:
         st.markdown(
-            '<h3 style="color: #1e293b; font-weight: 700; margin-bottom: 0.2rem;">'
+            '<h3 style="color: #0f172a; font-weight: 700; margin-bottom: 0.2rem;">'
             'Konfigurasi API</h3>',
             unsafe_allow_html=True,
         )
@@ -70,7 +70,7 @@ def render() -> None:
             '<div style="margin-top: 0.8rem; font-size: 0.78rem; color: #64748b;">'
             'Dapatkan API Key dari '
             '<a href="https://aistudio.google.com/app/apikey" target="_blank" '
-            'style="color: #4f46e5; text-decoration: none; font-weight: 500;">'
+            'style="color: #1e40af; text-decoration: none; font-weight: 500;">'
             'Google AI Studio</a></div>',
             unsafe_allow_html=True,
         )
