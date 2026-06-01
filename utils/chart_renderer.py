@@ -46,7 +46,7 @@ def render(fig: Any) -> None:
 
     - :class:`matplotlib.figure.Figure` → :func:`streamlit.pyplot`
     - :class:`plotly.graph_objs.Figure` → :func:`streamlit.plotly_chart`
-      (with ``use_container_width=True``)
+      (with ``width="stretch"``)
 
     If *fig* is neither a Matplotlib nor a Plotly figure, a descriptive
     warning is shown in the UI instead of raising an exception.
@@ -59,7 +59,7 @@ def render(fig: Any) -> None:
     if _is_matplotlib(fig):
         st.pyplot(fig)
     elif _is_plotly(fig):
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig, width="stretch")
     else:
         st.warning(
             f"⚠️ Tipe grafik tidak dikenali: `{type(fig).__name__}`. "

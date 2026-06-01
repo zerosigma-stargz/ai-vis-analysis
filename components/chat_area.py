@@ -126,7 +126,7 @@ def _render_message(message: dict[str, Any], msg_index: int = 0) -> None:
     # --- assistant messages ---
     with st.chat_message("assistant"):
         if content_type == "dataframe":
-            st.dataframe(content, use_container_width=True)
+            st.dataframe(content, width="stretch")
 
         elif content_type == "figure":
             chart_renderer.render(content)

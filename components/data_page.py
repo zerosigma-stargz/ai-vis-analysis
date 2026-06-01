@@ -16,6 +16,7 @@ from __future__ import annotations
 import streamlit as st
 
 from components import chat_area
+from components import floating_chatbox
 from core import data_inspector
 
 
@@ -57,9 +58,9 @@ def render() -> None:
 
     help_text = (
         "💡 Cara menggunakan AI Assistance:\n\n"
-        "1. Pastikan Gemini API Key sudah diisi di sidebar (panel kiri).\n"
-        "2. Ketik instruksi analisis atau visualisasi di kotak Prompt yang ada di sidebar.\n"
-        "3. Klik tombol **Kirim** untuk mengirim instruksi ke Gemini AI.\n\n"
+        "1. Pastikan Gemini API Key sudah diisi (lihat status di atas).\n"
+        "2. Ketik instruksi analisis atau visualisasi di kotak chat di bawah halaman ini.\n"
+        "3. Tekan **Enter** untuk mengirim instruksi ke Gemini AI.\n\n"
         "Contoh instruksi:\n"
         "• \"Buatkan grafik bar chart total sales per kategori\"\n"
         "• \"Tampilkan pie chart distribusi profit per segment\"\n"
@@ -75,13 +76,13 @@ def render() -> None:
             "❓",
             help=help_text,
             key="ai_assistance_help",
-            use_container_width=True,
+            width="stretch",
         )
 
     st.caption(
         "Gunakan Gemini AI untuk mentransformasi data, membuat grafik, dan menganalisis "
-        "DataFrame secara interaktif. Ketik instruksi Anda di **Prompt Box** yang tersedia "
-        "di **sidebar sebelah kiri**, lalu klik **Kirim**. Hasil analisis dan visualisasi "
+        "DataFrame secara interaktif. Ketik instruksi Anda di **kotak chat di bawah halaman ini**, "
+        "lalu tekan **Enter**. Hasil analisis dan visualisasi "
         "akan muncul di bawah ini."
     )
 
@@ -89,3 +90,8 @@ def render() -> None:
     # Chat area                                                            #
     # ------------------------------------------------------------------ #
     chat_area.render()
+
+    # ------------------------------------------------------------------ #
+    # Floating chat input                                                  #
+    # ------------------------------------------------------------------ #
+    floating_chatbox.render()

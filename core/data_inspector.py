@@ -135,7 +135,7 @@ def render_summary(df: pd.DataFrame, filename: str) -> None:
     # 3. Preview — first 5 rows                                            #
     # ------------------------------------------------------------------ #
     st.subheader("👀 Preview Data (5 Baris Pertama)")
-    st.dataframe(df.head(5), use_container_width=True)
+    st.dataframe(df.head(5), width="stretch")
 
     # ------------------------------------------------------------------ #
     # 4. Data types per column                                             #
@@ -144,7 +144,7 @@ def render_summary(df: pd.DataFrame, filename: str) -> None:
     dtype_df = pd.DataFrame(
         {"Kolom": df.dtypes.index, "Tipe Data": df.dtypes.values.astype(str)}
     ).reset_index(drop=True)
-    st.dataframe(dtype_df, use_container_width=True)
+    st.dataframe(dtype_df, width="stretch")
 
     # ------------------------------------------------------------------ #
     # 5. Null values per column                                            #
@@ -154,7 +154,7 @@ def render_summary(df: pd.DataFrame, filename: str) -> None:
     null_df = pd.DataFrame(
         {"Kolom": null_counts.index, "Jumlah Null": null_counts.values}
     ).reset_index(drop=True)
-    st.dataframe(null_df, use_container_width=True)
+    st.dataframe(null_df, width="stretch")
 
     # ------------------------------------------------------------------ #
     # 6. Duplicate rows                                                    #
@@ -170,7 +170,7 @@ def render_summary(df: pd.DataFrame, filename: str) -> None:
     numeric_cols = df.select_dtypes(include="number")
     if not numeric_cols.empty:
         stats_df = get_descriptive_stats(df)
-        st.dataframe(stats_df, use_container_width=True)
+        st.dataframe(stats_df, width="stretch")
     else:
         st.info("ℹ️ Tidak ada kolom numerik — statistik deskriptif tidak tersedia.")
 
