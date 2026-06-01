@@ -167,7 +167,7 @@ ATURAN WAJIB:
     # Untuk rentang tahun (misal 2018-2021), filter INKLUSIF sampai 31 Desember tahun terakhir:
     df_plot = df_plot[(df_plot['NamaKolomTanggal'] >= '2018-01-01') & (df_plot['NamaKolomTanggal'] <= '2021-12-31')]
     # Untuk satu tahun (misal 2020):
-    df_plot = df_plot[df_plot['NamaKolomTanggal'].dt.year == 2020]
+    df_plot = df_plot[(df_plot['NamaKolomTanggal'] >= '2020-01-01') & (df_plot['NamaKolomTanggal'] <= '2020-12-31')]
     ```
     LANGKAH 3 — Cek data tidak kosong:
     ```python
@@ -199,6 +199,52 @@ ATURAN WAJIB:
     - DILARANG: `x=df_ts['year']` atau `x=df_ts['col'].dt.year` → akan menghasilkan "2,019" bukan "2019"
 17. Untuk grafik line chart atau area chart multi-series, gunakan `px.line(df_ts, x='label', y=['kolom1', 'kolom2'])` atau `px.area(...)`. Pastikan kolom numerik sudah bersih dari NaN sebelum plotting.
 18. LARANGAN KERAS — fungsi yang menyebabkan timeout: JANGAN PERNAH memanggil `plt.show()`, `plt.savefig()`, `fig.show()`, `plt.pause()`, atau `plt.waitforbuttonpress()`. Cukup simpan figure ke variabel `fig`.
+19. ATURAN KRITIS DATETIME & TAHUN — Saat user menyebut "tahun 2018 sampai 2021" atau rentang tahun apapun:
+    a) Tahun dalam instruksi user SELALU merujuk ke DATETIME, BUKAN integer. JANGAN PERNAH gunakan `.dt.year` sebagai kolom untuk sumbu x atau sebagai variabel integer.
+    b) WAJIB konversi kolom tanggal: `df_plot['col'] = pd.to_datetime(df_plot['col'], errors='coerce')`
+    c) Filter rentang WAJIB menggunakan string datetime inklusif:
+       ```python
+       start_date = '2018-01-01'
+       end_date = '2021-12-31'
+       df_plot = df_plot[(df_plot['col_tanggal'] >= start_date) & (df_plot['col_tanggal'] <= end_date)]
+       ```
+       JANGAN gunakan: `df_plot['col'].dt.year.between(2018, 2021)` — ini menyebabkan data terpotong.
+    d) Untuk sumbu x, WAJIB buat kolom label string dari datetime:
+       - Multi-tahun dengan detail bulanan: `df_ts['label'] = df_ts['col'].dt.strftime('%b %Y')`
+       - Multi-tahun ringkas per kuartal: `df_ts['label'] = df_ts['col'].dt.to_period('Q').astype(str)`
+       - Jika hanya perlu per tahun: `df_ts['label'] = df_ts['col'].dt.strftime('%Y')`
+       JANGAN PERNAH: `x = df_ts['col'].dt.year` atau `x = tahun_int_variable` — ini menghasilkan format "2,018" bukan "2018".
+    e) Resample untuk grafik multi-tahun:
+       - Area chart / line chart: gunakan 'MS' (bulanan) atau 'QS' (kuartalan)
+       - JANGAN gunakan 'YS' (tahunan) untuk area chart — hasilnya hanya 1 titik per tahun, grafik tidak informatif
+       - 'MS' memastikan data mencakup SETIAP bulan dari Jan 2018 hingga Des 2021
+    f) Contoh LENGKAP yang BENAR untuk instruksi "area chart total sales dan profit tahun 2018-2021":
+       ```python
+       import plotly.express as px
+       import pandas as pd
+       
+       df_plot = df.copy()
+       df_plot['order_date'] = pd.to_datetime(df_plot['order_date'], errors='coerce')
+       df_plot = df_plot.dropna(subset=['order_date'])
+       df_plot['sales'] = pd.to_numeric(df_plot['sales'].astype(str).str.replace(',', ''), errors='coerce')
+       df_plot['profit'] = pd.to_numeric(df_plot['profit'].astype(str).str.replace(',', ''), errors='coerce')
+       
+       # Filter inklusif: 1 Jan 2018 sampai 31 Des 2021
+       df_plot = df_plot[(df_plot['order_date'] >= '2018-01-01') & (df_plot['order_date'] <= '2021-12-31')]
+       
+       if not df_plot.empty:
+           df_ts = df_plot.set_index('order_date')[['sales', 'profit']].resample('MS').sum().reset_index()
+           df_ts['label'] = df_ts['order_date'].dt.strftime('%b %Y')
+           fig = px.area(df_ts, x='label', y=['sales', 'profit'],
+                         title='Total Sales dan Profit per Bulan (2018-2021)')
+       else:
+           print("Tidak ada data dalam rentang 2018-2021")
+       ```
+    g) KESALAHAN UMUM YANG HARUS DIHINDARI:
+       - `df.groupby(df['col'].dt.year)` → SALAH, year jadi integer
+       - `df_plot[df_plot['col'].dt.year.between(2018, 2021)]` → SALAH, bisa terpotong
+       - `fig = px.area(df_ts, x='year', ...)` dimana year adalah int → SALAH, format "2,018"
+       - `df_ts.resample('YS')` untuk area chart multi-tahun → SALAH, hanya 1 titik per tahun
 
 SKEMA DATAFRAME AKTIF:
 {df_schema}
