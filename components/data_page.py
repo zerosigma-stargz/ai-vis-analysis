@@ -15,10 +15,6 @@ from __future__ import annotations
 
 import streamlit as st
 
-from components import chat_area
-from components import floating_chatbox
-from core import data_inspector
-
 
 def render() -> None:
     """Render the Data Page.
@@ -38,6 +34,11 @@ def render() -> None:
 
     Requirements: 4.1, 4.2
     """
+    # Lazy imports to prevent circular import during Streamlit reruns
+    from components import chat_area
+    from components import floating_chatbox
+    from core import data_inspector
+
     df = st.session_state.df
     filename: str = st.session_state.get("original_filename", "")
 

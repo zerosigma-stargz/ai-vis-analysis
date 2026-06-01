@@ -164,8 +164,8 @@ ATURAN WAJIB:
     ```
     LANGKAH 2 — Filter rentang tahun:
     ```python
-    # Untuk rentang tahun (misal 2019-2021):
-    df_plot = df_plot[df_plot['NamaKolomTanggal'].dt.year.between(2019, 2021)]
+    # Untuk rentang tahun (misal 2018-2021), filter INKLUSIF sampai 31 Desember tahun terakhir:
+    df_plot = df_plot[(df_plot['NamaKolomTanggal'] >= '2018-01-01') & (df_plot['NamaKolomTanggal'] <= '2021-12-31')]
     # Untuk satu tahun (misal 2020):
     df_plot = df_plot[df_plot['NamaKolomTanggal'].dt.year == 2020]
     ```
@@ -187,6 +187,8 @@ ATURAN WAJIB:
                       title='Judul Grafik')
         # JANGAN panggil fig.show(), plt.show(), atau plt.savefig() — sistem menampilkan fig secara otomatis
     ```
+    PENTING: Untuk grafik multi-tahun (misal 2018-2021), gunakan resample bulanan ('MS') atau kuartalan ('QS') agar grafik menunjukkan perubahan sepanjang periode secara detail. Resample tahunan ('YS') hanya menampilkan satu titik per tahun sehingga kurang informatif untuk area chart.
+    PENTING: Saat filter tahun menggunakan range (misal 2018 sampai 2021), pastikan INKLUSIF hingga 31 Desember tahun terakhir. Gunakan format: `df_plot[(df_plot['col'] >= '2018-01-01') & (df_plot['col'] <= '2021-12-31')]`
 14. JANGAN gunakan groupby per bulan jika user meminta per kuartal. Pastikan granularitas agregasi sesuai permintaan user.
 15. WAJIB konversi kolom tanggal ke datetime64 SEBELUM filter atau resample. Gunakan variabel sementara `df_plot = df.copy()` agar `df` asli tidak berubah.
 16. FORMAT SUMBU X DATETIME — ATURAN KRITIS:
