@@ -44,7 +44,7 @@ def render() -> None:
     # ------------------------------------------------------------------ #
     # Header — active filename                                             #
     # ------------------------------------------------------------------ #
-    st.header(f"📂 {filename}")
+    st.header(filename)
 
     # ------------------------------------------------------------------ #
     # Data summary                                                         #
@@ -57,33 +57,31 @@ def render() -> None:
     st.divider()
 
     help_text = (
-        "💡 Cara menggunakan AI Assistance:\n\n"
-        "1. Pastikan Gemini API Key sudah diisi (lihat status di atas).\n"
+        "Cara menggunakan AI Assistance:\n\n"
+        "1. Pastikan Gemini API Key sudah diisi (lihat status di atas halaman).\n"
         "2. Ketik instruksi analisis atau visualisasi di kotak chat di bawah halaman ini.\n"
         "3. Tekan **Enter** untuk mengirim instruksi ke Gemini AI.\n\n"
         "Contoh instruksi:\n"
-        "• \"Buatkan grafik bar chart total sales per kategori\"\n"
-        "• \"Tampilkan pie chart distribusi profit per segment\"\n"
-        "• \"Hitung rata-rata sales per region dan tampilkan hasilnya\"\n"
-        "• \"Hapus kolom yang tidak diperlukan dan tampilkan 10 baris pertama\""
+        "- \"Buatkan grafik bar chart total sales per kategori\"\n"
+        "- \"Tampilkan pie chart distribusi profit per segment\"\n"
+        "- \"Hitung rata-rata sales per region dan tampilkan hasilnya\"\n"
+        "- \"Hapus kolom yang tidak diperlukan dan tampilkan 10 baris pertama\""
     )
 
     col_title, col_help = st.columns([0.92, 0.08])
     with col_title:
-        st.subheader("🤖 Area Modifikasi DataFrame dan Visualisasi Grafik AI Assistance")
+        st.subheader("Analisis & Visualisasi")
     with col_help:
         st.button(
-            "❓",
+            "?",
             help=help_text,
             key="ai_assistance_help",
             width="stretch",
         )
 
     st.caption(
-        "Gunakan Gemini AI untuk mentransformasi data, membuat grafik, dan menganalisis "
-        "DataFrame secara interaktif. Ketik instruksi Anda di **kotak chat di bawah halaman ini**, "
-        "lalu tekan **Enter**. Hasil analisis dan visualisasi "
-        "akan muncul di bawah ini."
+        "Ketik instruksi di kotak chat bawah halaman untuk transformasi data, "
+        "grafik, atau analisis. Tekan Enter untuk mengirim."
     )
 
     # ------------------------------------------------------------------ #
