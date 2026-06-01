@@ -71,7 +71,12 @@ st.markdown(
     /* ── Hide default Streamlit header decoration ────────────────────────── */
     #MainMenu { visibility: hidden; }
     footer    { visibility: hidden; }
-    header    { visibility: hidden; }
+    header[data-testid="stHeader"] {
+        background: transparent !important;
+    }
+    [data-testid="stToolbar"] {
+        visibility: hidden;
+    }
 
     /* ── Main content area — sedikit padding atas ────────────────────────── */
     .block-container {
