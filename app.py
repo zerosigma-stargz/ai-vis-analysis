@@ -7,7 +7,7 @@ This module is the top-level Streamlit entry point. It is responsible for:
 2. Configuring the Streamlit page (title, layout).
 3. Initialising ``st.session_state`` with default values on the first render
    cycle (and only on the first cycle -- existing keys are never overwritten).
-4. Rendering the sidebar via :func:`components.sidebar.render`.
+4. Rendering the inline API key input via :func:`components.api_key_input.render`.
 5. Routing between :func:`components.landing_page.render` (when no DataFrame
    is loaded) and :func:`components.data_page.render` (when a DataFrame is
    present in session state).
@@ -41,7 +41,7 @@ st.set_page_config(
     page_title="AI Data Analysis & Visualization",
     page_icon="📊",
     layout="wide",
-    initial_sidebar_state="expanded",
+    initial_sidebar_state="collapsed",
     menu_items={
         "About": (
             "**AI Data Analysis & Visualization**\n\n"
@@ -80,10 +80,15 @@ st.markdown(
         max-width: 1100px;
     }
 
-    /* Sidebar - light blue tinted gradient */
+    /* Hide sidebar entirely */
     [data-testid="stSidebar"] {
-        background: linear-gradient(180deg, #f8fafc 0%, #f0f7ff 100%);
-        border-right: 2px solid #1e40af;
+        display: none !important;
+    }
+    [data-testid="stSidebarCollapsedControl"] {
+        display: none !important;
+    }
+    button[data-testid="stSidebarCollapseButton"] {
+        display: none !important;
     }
 
     /* Buttons */
@@ -191,7 +196,7 @@ st.markdown(
 # ---------------------------------------------------------------------------
 # Component imports (after page config)
 # ---------------------------------------------------------------------------
-from components import sidebar, data_page, landing_page
+from components import api_key_input, data_page, landing_page
 
 # ---------------------------------------------------------------------------
 # Default session state values
@@ -276,8 +281,8 @@ def main() -> None:
     Execution order on every render cycle:
 
     1. :func:`init_session_state` -- ensure all session state keys exist.
-    2. :func:`components.sidebar.render` -- render sidebar with API key input.
-    3. :func:`_render_app_header` -- render minimal header.
+    2. :func:`_render_app_header` -- render minimal header.
+    3. :func:`components.api_key_input.render` -- render inline API key input.
     4. Route to :func:`components.landing_page.render` when
        ``st.session_state.df is None``, or to
        :func:`components.data_page.render` when a DataFrame is loaded.
@@ -285,8 +290,8 @@ def main() -> None:
     Requirements: 2.1, 2.5, 10.3, 11.3, 11.5
     """
     init_session_state()
-    sidebar.render()
     _render_app_header()
+    api_key_input.render()
 
     if st.session_state.df is None:
         landing_page.render()

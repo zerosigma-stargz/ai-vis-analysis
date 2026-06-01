@@ -47,7 +47,7 @@ def _show_api_key_error(error_msg: str) -> None:
         st.error(
             "\U0001f511 **Kuota Gemini API Key Habis**\n\n"
             "Kuota penggunaan API Key Anda telah habis. "
-            "Silakan masukkan **API Key baru** di sidebar "
+            "Silakan klik **Ganti Key** di atas halaman dan masukkan **API Key baru** "
             "untuk melanjutkan sesi analisis.",
             icon="\u26a0\ufe0f",
         )
@@ -56,7 +56,7 @@ def _show_api_key_error(error_msg: str) -> None:
             "\U0001f511 **Gemini API Key Tidak Valid**\n\n"
             "API Key yang Anda masukkan tidak dikenali oleh Google. "
             "Silakan periksa dan masukkan **API Key yang benar** "
-            "di sidebar.",
+            "dengan klik **Ganti Key** di atas halaman.",
             icon="\u274c",
         )
 
@@ -139,8 +139,6 @@ def render() -> None:
     Requirements: 5.1, 5.2, 5.5, 5.7, 5.8, 6.1, 6.2
     """
     api_key: str = st.session_state.get("api_key", "")
-    if not api_key:
-        pass  # API key input is rendered in the sidebar
 
     prompt: str | None = st.chat_input(
         "Ketik instruksi analisis atau visualisasi...",
@@ -153,7 +151,7 @@ def render() -> None:
     api_key = st.session_state.get("api_key", "")
     if not api_key:
         st.toast(
-            "\u26a0\ufe0f Silakan masukkan **Gemini API Key** di sidebar terlebih dahulu.",
+            "\u26a0\ufe0f Silakan masukkan **Gemini API Key** di bagian atas halaman terlebih dahulu.",
             icon="\u26a0\ufe0f",
         )
         return
