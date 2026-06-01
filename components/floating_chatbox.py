@@ -138,6 +138,14 @@ def render() -> None:
 
     Requirements: 5.1, 5.2, 5.5, 5.7, 5.8, 6.1, 6.2
     """
+    api_key: str = st.session_state.get("api_key", "")
+    if not api_key:
+        st.info(
+            "\U0001f511 Masukkan **Gemini API Key** di sidebar (klik ikon \U0001f511 "
+            "di pojok kiri atas) untuk mengaktifkan chat box.",
+            icon="\u2139\ufe0f",
+        )
+
     prompt: str | None = st.chat_input(
         "Ketik instruksi analisis atau visualisasi...",
     )
@@ -145,8 +153,8 @@ def render() -> None:
     if prompt is None:
         return
 
-    # Check API key is available.
-    api_key: str = st.session_state.get("api_key", "")
+    # Check API key is available (re-read in case it changed).
+    api_key = st.session_state.get("api_key", "")
     if not api_key:
         st.toast(
             "\u26a0\ufe0f Silakan masukkan **Gemini API Key** di sidebar terlebih dahulu.",
