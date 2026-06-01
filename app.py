@@ -1,13 +1,14 @@
 """
-app.py -- Entry point for the AI Data Analysis & Visualization application.
+app.py — Entry point for the AI Assistance Analisis & Visualisasi Chart Grafik Data application.
 
 This module is the top-level Streamlit entry point. It is responsible for:
 
 1. Loading environment variables from ``.env`` via ``python-dotenv``.
 2. Configuring the Streamlit page (title, layout).
 3. Initialising ``st.session_state`` with default values on the first render
-   cycle (and only on the first cycle -- existing keys are never overwritten).
-4. Rendering the sidebar via :func:`components.sidebar.render`.
+   cycle (and only on the first cycle — existing keys are never overwritten).
+4. Rendering the API key input inline on the main page via
+   :func:`components.api_key_input.render`.
 5. Routing between :func:`components.landing_page.render` (when no DataFrame
    is loaded) and :func:`components.data_page.render` (when a DataFrame is
    present in session state).
@@ -38,16 +39,16 @@ load_dotenv()
 import streamlit as st
 
 st.set_page_config(
-    page_title="AI Data Analysis & Visualization",
-    page_icon="📊",
+    page_title="AI Assistance Analisis & Visualisasi Chart Grafik Data",
+    page_icon="🤖",
     layout="wide",
-    initial_sidebar_state="expanded",
+    initial_sidebar_state="collapsed",
     menu_items={
         "About": (
-            "**AI Data Analysis & Visualization**\n\n"
+            "**AI Assistance Analisis & Visualisasi Chart Grafik Data**\n\n"
             "Aplikasi analisis data berbasis AI yang didukung Gemini 2.5 Flash. "
             "Unggah file data Anda dan mulai eksplorasi dengan instruksi bahasa alami.\n\n"
-            "Dibangun dengan Python, Streamlit, Pandas, Plotly, Matplotlib"
+            "Dibangun dengan Python · Streamlit · Pandas · Plotly · Matplotlib"
         ),
         "Get help": "https://github.com/yourusername/chatbot-analisis-data",
         "Report a bug": "https://github.com/yourusername/chatbot-analisis-data/issues",
@@ -55,131 +56,174 @@ st.set_page_config(
 )
 
 # ---------------------------------------------------------------------------
-# Global CSS -- minimalist, professional styling
+# Global CSS — menyeragamkan tipografi, warna, dan spacing agar konsisten
+# dengan tampilan landing_page.py (gradient ungu-biru, kartu rounded, dll.)
 # ---------------------------------------------------------------------------
 st.markdown(
     """
     <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
-
+    /* ── Font & base ─────────────────────────────────────────────────────── */
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap');
+    
     html, body, [class*="css"] {
-        font-family: "Inter", -apple-system, system-ui, sans-serif;
+        font-family: "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
     }
 
+    /* ── Hide default Streamlit header decoration ────────────────────────── */
     #MainMenu { visibility: hidden; }
-    footer { visibility: hidden; }
+    footer    { visibility: hidden; }
     header[data-testid="stHeader"] {
-        background: #ffffff !important;
-        border-bottom: 1px solid #f1f5f9;
+        background: transparent !important;
     }
-    [data-testid="stToolbar"] { visibility: hidden; }
+    [data-testid="stToolbar"] {
+        visibility: hidden;
+    }
 
+    /* ── Main content area — sedikit padding atas ────────────────────────── */
     .block-container {
         padding-top: 1.5rem !important;
         padding-bottom: 2rem !important;
-        max-width: 1100px;
+        max-width: 1200px;
     }
 
-    /* Sidebar - clean white */
+    /* ── Hide sidebar entirely ───────────────────────────────────────────── */
     [data-testid="stSidebar"] {
-        background: #ffffff;
-        border-right: 1px solid #e2e8f0;
+        display: none !important;
+    }
+    [data-testid="stSidebarCollapsedControl"] {
+        display: none !important;
+    }
+    button[data-testid="stSidebarCollapseButton"] {
+        display: none !important;
     }
 
-    /* Buttons */
+    /* ── Tombol primer — gradient ungu selaras dengan hero ───────────────── */
     .stButton > button[kind="primary"] {
-        background: #4f46e5;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         border: none;
         color: #ffffff;
-        font-weight: 600;
-        border-radius: 8px;
+        font-weight: 700;
+        border-radius: 10px;
         padding: 0.5rem 1.2rem;
-        transition: background 0.2s ease;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
     }
     .stButton > button[kind="primary"]:hover {
-        background: #4338ca;
+        opacity: 0.9;
+        transform: translateY(-2px);
+        box-shadow: 0 6px 16px rgba(102, 126, 234, 0.4);
+    }
+    .stButton > button[kind="primary"]:active {
+        transform: translateY(0);
     }
 
+    /* ── Tombol sekunder ─────────────────────────────────────────────────── */
     .stButton > button[kind="secondary"] {
-        border: 1px solid #e2e8f0;
-        border-radius: 8px;
-        font-weight: 500;
+        border: 2px solid #d1d5db;
+        border-radius: 10px;
+        font-weight: 600;
         color: #374151;
         background: #ffffff;
-        transition: all 0.2s ease;
+        transition: all 0.3s ease;
     }
     .stButton > button[kind="secondary"]:hover {
-        border-color: #4f46e5;
-        color: #4f46e5;
+        border-color: #764ba2;
+        background: linear-gradient(135deg, #faf5ff 0%, #f0f4ff 100%);
+        color: #764ba2;
+        transform: translateY(-1px);
     }
 
-    /* Alerts */
+    /* ── st.info / st.warning / st.error — rounded dengan shadow ─────────── */
     [data-testid="stAlert"] {
-        border-radius: 8px !important;
+        border-radius: 12px !important;
+        border: 1px solid rgba(0,0,0,0.05) !important;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.05) !important;
     }
 
-    /* Dataframe */
+    /* ── st.dataframe — border halus dengan shadow ───────────────────────── */
     [data-testid="stDataFrame"] {
-        border: 1px solid #e2e8f0;
-        border-radius: 8px;
+        border: 1px solid #e5e7eb;
+        border-radius: 12px;
         overflow: hidden;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.04);
     }
 
-    /* Expander */
+    /* ── Expander — border halus ─────────────────────────────────────────── */
     [data-testid="stExpander"] {
-        border: 1px solid #e2e8f0 !important;
-        border-radius: 8px !important;
+        border: 1px solid #e5e7eb !important;
+        border-radius: 12px !important;
+        background: #ffffff !important;
     }
 
-    /* Chat messages */
+    /* ── Chat message bubbles ────────────────────────────────────────────── */
     [data-testid="stChatMessage"] {
-        border-radius: 10px;
-        padding: 0.6rem 0.8rem;
+        border-radius: 14px;
+        padding: 0.7rem 0.9rem;
+        box-shadow: 0 1px 4px rgba(0,0,0,0.05);
     }
 
-    /* Divider */
+    /* ── Divider — lebih tipis ───────────────────────────────────────────── */
     hr {
         border: none !important;
         height: 1px !important;
-        background: #e2e8f0 !important;
-        margin: 1.2rem 0 !important;
+        background: linear-gradient(90deg, transparent, #e5e7eb, transparent) !important;
+        margin: 1.5rem 0 !important;
     }
 
-    /* Metric */
+    /* ── Metric cards ────────────────────────────────────────────────────── */
     [data-testid="stMetric"] {
-        background: #f8fafc;
-        border: 1px solid #e2e8f0;
-        border-radius: 8px;
-        padding: 0.6rem 0.8rem;
+        background: linear-gradient(135deg, #f8faff 0%, #f0f4ff 100%);
+        border: 1px solid #e0e7ff;
+        border-radius: 12px;
+        padding: 0.7rem 0.9rem;
+        box-shadow: 0 2px 6px rgba(102, 126, 234, 0.08);
     }
 
-    /* Input fields */
+    /* ── Text input & text area ──────────────────────────────────────────── */
     [data-testid="stTextInput"] input,
     [data-testid="stTextArea"] textarea {
-        border-radius: 8px !important;
-        border: 1px solid #e2e8f0 !important;
+        border-radius: 10px !important;
+        border: 2px solid #e5e7eb !important;
+        transition: border-color 0.3s ease !important;
     }
     [data-testid="stTextInput"] input:focus,
     [data-testid="stTextArea"] textarea:focus {
-        border-color: #4f46e5 !important;
-        box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.1) !important;
+        border-color: #667eea !important;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1) !important;
     }
 
-    /* File uploader */
+    /* ── File uploader ───────────────────────────────────────────────────── */
+    [data-testid="stFileUploader"] {
+        border-radius: 12px !important;
+    }
     [data-testid="stFileUploader"] section {
         border: 2px dashed #d1d5db !important;
-        border-radius: 8px !important;
-        background: #f9fafb !important;
+        border-radius: 12px !important;
+        background: linear-gradient(135deg, #fafbff 0%, #f8f9ff 100%) !important;
+        transition: all 0.3s ease !important;
     }
     [data-testid="stFileUploader"] section:hover {
-        border-color: #4f46e5 !important;
-        background: #f5f3ff !important;
+        border-color: #667eea !important;
+        background: linear-gradient(135deg, #f8faff 0%, #f0f4ff 100%) !important;
     }
 
-    /* Tabs */
+    /* ── Tabs ────────────────────────────────────────────────────────────── */
+    [data-testid="stTabs"] button {
+        border-radius: 8px 8px 0 0 !important;
+        font-weight: 600 !important;
+    }
     [data-testid="stTabs"] button[aria-selected="true"] {
-        border-bottom: 2px solid #4f46e5 !important;
-        color: #4f46e5 !important;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+        color: white !important;
+    }
+
+    /* ── Animasi fade-in untuk konten ────────────────────────────────────── */
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    .block-container > div {
+        animation: fadeIn 0.5s ease-out;
     }
     </style>
     """,
@@ -189,7 +233,7 @@ st.markdown(
 # ---------------------------------------------------------------------------
 # Component imports (after page config)
 # ---------------------------------------------------------------------------
-from components import sidebar, data_page, landing_page
+from components import api_key_input, data_page, landing_page
 
 # ---------------------------------------------------------------------------
 # Default session state values
@@ -199,12 +243,12 @@ from components import sidebar, data_page, landing_page
 #: Used by :func:`init_session_state` to populate ``st.session_state`` on the
 #: first render cycle without overwriting values set in subsequent reruns.
 DEFAULT_SESSION_STATE: dict = {
-    "df": None,                 # pd.DataFrame | None -- active DataFrame
-    "original_filename": None,  # str | None -- uploaded filename
-    "api_key": "",              # str -- Gemini API Key (from input or env var)
-    "chat_history": [],         # list[ChatMessage] -- conversation history
+    "df": None,                 # pd.DataFrame | None — active DataFrame
+    "original_filename": None,  # str | None — uploaded filename
+    "api_key": "",              # str — Gemini API Key (from input or env var)
+    "chat_history": [],         # list[ChatMessage] — conversation history
     "last_output_type": None,   # "dataframe" | "figure" | "text" | "error" | None
-    "last_output_data": None,   # Any -- last output data for download
+    "last_output_data": None,   # Any — last output data for download
 }
 
 
@@ -241,26 +285,51 @@ def init_session_state() -> None:
 
 
 def _render_app_header() -> None:
-    """Render a minimal app header."""
+    """Render a compact, elegant app header with gradient branding.
+    
+    Displayed at the top of every page for consistent branding.
+    """
     st.markdown(
         """
         <div style="
-            border-bottom: 1px solid #e2e8f0;
-            padding: 0.6rem 0 1rem 0;
-            margin-bottom: 1.2rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+            padding: 0.8rem 1.5rem;
+            border-radius: 14px;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 4px 16px rgba(102, 126, 234, 0.25);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
         ">
-            <h1 style="
-                font-size: 1.5rem;
+            <div style="display: flex; align-items: center; gap: 0.8rem;">
+                <div style="font-size: 2rem;">🤖</div>
+                <div>
+                    <div style="
+                        font-size: 1.3rem;
+                        font-weight: 800;
+                        color: #ffffff;
+                        line-height: 1.2;
+                        letter-spacing: -0.02em;
+                    ">AI Assistance Analisis & Visualisasi Chart Grafik Data</div>
+                    <div style="
+                        font-size: 0.75rem;
+                        color: rgba(255, 255, 255, 0.85);
+                        font-weight: 500;
+                        margin-top: 0.1rem;
+                    ">Didukung Gemini 2.5 Flash · Transformasi data dengan bahasa alami</div>
+                </div>
+            </div>
+            <div style="
+                background: rgba(255, 255, 255, 0.2);
+                backdrop-filter: blur(10px);
+                padding: 0.4rem 0.9rem;
+                border-radius: 999px;
+                font-size: 0.7rem;
                 font-weight: 700;
-                color: #1e293b;
-                margin: 0;
-                line-height: 1.3;
-            ">AI Data Analysis & Visualization</h1>
-            <p style="
-                font-size: 0.85rem;
-                color: #64748b;
-                margin: 0.2rem 0 0 0;
-            ">Analisis data dan buat visualisasi dengan instruksi bahasa alami</p>
+                color: #ffffff;
+                text-transform: uppercase;
+                letter-spacing: 0.05em;
+            ">AI-Powered</div>
         </div>
         """,
         unsafe_allow_html=True,
@@ -272,9 +341,9 @@ def main() -> None:
 
     Execution order on every render cycle:
 
-    1. :func:`init_session_state` -- ensure all session state keys exist.
-    2. :func:`components.sidebar.render` -- render sidebar with API key input.
-    3. :func:`_render_app_header` -- render minimal header.
+    1. :func:`init_session_state` — ensure all session state keys exist.
+    2. :func:`_render_app_header` — render elegant gradient header.
+    3. :func:`components.api_key_input.render` — render API key input inline.
     4. Route to :func:`components.landing_page.render` when
        ``st.session_state.df is None``, or to
        :func:`components.data_page.render` when a DataFrame is loaded.
@@ -282,8 +351,8 @@ def main() -> None:
     Requirements: 2.1, 2.5, 10.3, 11.3, 11.5
     """
     init_session_state()
-    sidebar.render()
     _render_app_header()
+    api_key_input.render()
 
     if st.session_state.df is None:
         landing_page.render()
