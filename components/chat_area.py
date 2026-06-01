@@ -23,8 +23,6 @@ from typing import Any
 
 import streamlit as st
 
-from utils import chart_renderer
-
 
 def _render_chart_insight(insight: dict | None, error: str | None) -> None:
     """Render the AI-generated chart insight panel below a figure.
@@ -129,6 +127,7 @@ def _render_message(message: dict[str, Any], msg_index: int = 0) -> None:
             st.dataframe(content, width="stretch")
 
         elif content_type == "figure":
+            from utils import chart_renderer
             chart_renderer.render(content)
             # Render AI-generated insight panel
             insight: dict | None = message.get("chart_insight")
