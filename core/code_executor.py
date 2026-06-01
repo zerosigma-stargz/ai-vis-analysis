@@ -147,6 +147,26 @@ def _build_namespace(df: pd.DataFrame) -> dict:
 # Task 6.3 — Output detection
 # ---------------------------------------------------------------------------
 
+def _sanitize_dataframe_for_arrow(df: pd.DataFrame) -> pd.DataFrame:
+    """Sanitize DataFrame columns for Arrow serialization compatibility.
+
+    Fixes columns with dtype 'object' that contain Timestamp objects
+    or other types that PyArrow cannot serialize directly.
+    """
+    df = df.copy()
+    for col in df.columns:
+        if df[col].dtype == object:
+            # Check if column contains Timestamp objects
+            non_null = df[col].dropna()
+            if len(non_null) == 0:
+                continue
+            sample = non_null.iloc[:min(20, len(non_null))]
+            has_timestamps = any(isinstance(v, pd.Timestamp) for v in sample)
+            if has_timestamps:
+                df[col] = pd.to_datetime(df[col], errors='coerce')
+    return df
+
+
 def _detect_output(
     namespace: dict,
     original_df: pd.DataFrame,
@@ -200,7 +220,7 @@ def _detect_output(
         if changed:
             return ExecutionResult(
                 output_type="dataframe",
-                data=namespace["df"],
+                data=_sanitize_dataframe_for_arrow(namespace["df"]),
                 stdout=captured_stdout,
                 error=None,
                 execution_time_ms=0.0,  # caller fills this in

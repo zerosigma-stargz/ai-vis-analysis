@@ -245,6 +245,47 @@ ATURAN WAJIB:
        - `df_plot[df_plot['col'].dt.year.between(2018, 2021)]` → SALAH, bisa terpotong
        - `fig = px.area(df_ts, x='year', ...)` dimana year adalah int → SALAH, format "2,018"
        - `df_ts.resample('YS')` untuk area chart multi-tahun → SALAH, hanya 1 titik per tahun
+20. FILTER BERDASARKAN BULAN SPESIFIK — Saat user menyebut "bulan Januari sampai Februari 2025" atau rentang bulan tertentu:
+    a) WAJIB gunakan filter datetime string inklusif dengan tanggal lengkap:
+       ```python
+       # Januari sampai Februari 2025 (inklusif seluruh hari dan waktu):
+       df_plot = df_plot[(df_plot['col_tanggal'] >= '2025-01-01') & (df_plot['col_tanggal'] <= '2025-02-28 23:59:59')]
+       # Catatan: untuk Februari, gunakan 28 (atau 29 untuk tahun kabisat)
+       ```
+    b) JANGAN gunakan `.dt.month.between(1, 2)` tanpa filter tahun — ini akan mengambil data dari SEMUA tahun.
+    c) Untuk data dengan komponen waktu (jam, menit, detik), pastikan end date mencakup hingga 23:59:59:
+       ```python
+       start_date = '2025-01-01 00:00:00'
+       end_date = '2025-02-28 23:59:59'
+       df_plot = df_plot[(df_plot['col_tanggal'] >= start_date) & (df_plot['col_tanggal'] <= end_date)]
+       ```
+    d) Untuk granularitas per hari (data harian dalam rentang bulan):
+       ```python
+       df_ts = df_plot.set_index('col_tanggal')[['col_numerik']].resample('D').sum().reset_index()
+       df_ts['label'] = df_ts['col_tanggal'].dt.strftime('%d %b %Y')  # "01 Jan 2025", "02 Jan 2025"
+       ```
+    e) Untuk granularitas per minggu dalam rentang bulan:
+       ```python
+       df_ts = df_plot.set_index('col_tanggal')[['col_numerik']].resample('W').sum().reset_index()
+       df_ts['label'] = df_ts['col_tanggal'].dt.strftime('%d %b')  # "06 Jan", "13 Jan"
+       ```
+    f) PENTING: Jika kolom tanggal berisi komponen WAKTU (jam:menit:detik), kolom tersebut tetap DATETIME — konversi dengan `pd.to_datetime()` akan otomatis memproses format seperti "2025-02-16 11:37:32".
+    g) Mapping nama bulan Indonesia ke angka:
+       Januari=1, Februari=2, Maret=3, April=4, Mei=5, Juni=6,
+       Juli=7, Agustus=8, September=9, Oktober=10, November=11, Desember=12
+    h) Mapping jumlah hari per bulan (untuk end date):
+       Jan=31, Feb=28(29 kabisat), Mar=31, Apr=30, Mei=31, Jun=30,
+       Jul=31, Ags=31, Sep=30, Okt=31, Nov=30, Des=31
+21. SANITASI KOLOM DATETIME SEBELUM RETURN — Setelah konversi `pd.to_datetime()`, SELALU pastikan kolom tersebut benar-benar bertipe `datetime64`, bukan `object`:
+    ```python
+    df_plot['col_tanggal'] = pd.to_datetime(df_plot['col_tanggal'], errors='coerce')
+    # Verifikasi tipe data:
+    assert df_plot['col_tanggal'].dtype != 'object', "Kolom tanggal masih bertipe object!"
+    ```
+    Jika setelah konversi masih `object`, kemungkinan ada format tanggal yang tidak konsisten. Gunakan `format=` parameter:
+    ```python
+    df_plot['col_tanggal'] = pd.to_datetime(df_plot['col_tanggal'], format='mixed', errors='coerce')
+    ```
 
 SKEMA DATAFRAME AKTIF:
 {df_schema}
