@@ -148,8 +148,9 @@ def render() -> None:
     # Check API key is available.
     api_key: str = st.session_state.get("api_key", "")
     if not api_key:
-        st.warning(
-            "\u26a0\ufe0f Silakan masukkan **Gemini API Key** di sidebar terlebih dahulu."
+        st.toast(
+            "\u26a0\ufe0f Silakan masukkan **Gemini API Key** di sidebar terlebih dahulu.",
+            icon="\u26a0\ufe0f",
         )
         return
 
@@ -157,9 +158,8 @@ def render() -> None:
     if df is None:
         return
 
-    if not prompt.strip():
-        st.warning("\u26a0\ufe0f Prompt tidak boleh kosong.")
-        return
+    # Note: st.chat_input guarantees a non-empty string on submission,
+    # so an empty-prompt guard is not needed here.
 
     # Build DataFrame schema for the system prompt.
     # Include datetime column info and date range to help Gemini generate
