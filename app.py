@@ -7,7 +7,8 @@ This module is the top-level Streamlit entry point. It is responsible for:
 2. Configuring the Streamlit page (title, layout).
 3. Initialising ``st.session_state`` with default values on the first render
    cycle (and only on the first cycle — existing keys are never overwritten).
-4. Rendering the sidebar on every cycle via :func:`components.sidebar.render`.
+4. Rendering the API key input inline on the main page via
+   :func:`components.api_key_input.render`.
 5. Routing between :func:`components.landing_page.render` (when no DataFrame
    is loaded) and :func:`components.data_page.render` (when a DataFrame is
    present in session state).
@@ -41,7 +42,7 @@ st.set_page_config(
     page_title="AI Assistance Analisis & Visualisasi Chart Grafik Data",
     page_icon="🤖",
     layout="wide",
-    initial_sidebar_state="expanded",
+    initial_sidebar_state="collapsed",
     menu_items={
         "About": (
             "**AI Assistance Analisis & Visualisasi Chart Grafik Data**\n\n"
@@ -85,13 +86,15 @@ st.markdown(
         max-width: 1200px;
     }
 
-    /* ── Sidebar — gradient subtle ungu-biru ─────────────────────────────── */
+    /* ── Hide sidebar entirely ───────────────────────────────────────────── */
     [data-testid="stSidebar"] {
-        background: linear-gradient(180deg, #faf8ff 0%, #f8faff 100%);
-        border-right: 2px solid #e0e7ff;
+        display: none !important;
     }
-    [data-testid="stSidebar"] .block-container {
-        padding-top: 1.2rem !important;
+    [data-testid="stSidebarCollapsedControl"] {
+        display: none !important;
+    }
+    button[data-testid="stSidebarCollapseButton"] {
+        display: none !important;
     }
 
     /* ── Tombol primer — gradient ungu selaras dengan hero ───────────────── */
@@ -214,22 +217,6 @@ st.markdown(
         color: white !important;
     }
 
-    /* ── Ensure sidebar toggle buttons are ALWAYS visible and accessible ── */
-    button[data-testid="stSidebarCollapseButton"],
-    [data-testid="stSidebarCollapsedControl"],
-    [data-testid="stSidebarCollapsedControl"] button {
-        visibility: visible !important;
-        display: flex !important;
-        opacity: 1 !important;
-        z-index: 999999 !important;
-        pointer-events: auto !important;
-    }
-    
-    /* Make sure the sidebar itself is never hidden by any animation/transition */
-    [data-testid="stSidebar"] {
-        transition: none !important;
-    }
-
     /* ── Animasi fade-in untuk konten ────────────────────────────────────── */
     @keyframes fadeIn {
         from { opacity: 0; transform: translateY(10px); }
@@ -246,7 +233,7 @@ st.markdown(
 # ---------------------------------------------------------------------------
 # Component imports (after page config)
 # ---------------------------------------------------------------------------
-from components import data_page, landing_page, sidebar
+from components import api_key_input, data_page, landing_page
 
 # ---------------------------------------------------------------------------
 # Default session state values
@@ -356,7 +343,7 @@ def main() -> None:
 
     1. :func:`init_session_state` — ensure all session state keys exist.
     2. :func:`_render_app_header` — render elegant gradient header.
-    3. :func:`components.sidebar.render` — always render the sidebar.
+    3. :func:`components.api_key_input.render` — render API key input inline.
     4. Route to :func:`components.landing_page.render` when
        ``st.session_state.df is None``, or to
        :func:`components.data_page.render` when a DataFrame is loaded.
@@ -364,11 +351,8 @@ def main() -> None:
     Requirements: 2.1, 2.5, 10.3, 11.3, 11.5
     """
     init_session_state()
-
-    # Render sidebar FIRST to ensure it's always visible and accessible
-    sidebar.render()
-
     _render_app_header()
+    api_key_input.render()
 
     if st.session_state.df is None:
         landing_page.render()

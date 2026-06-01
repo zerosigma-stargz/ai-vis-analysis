@@ -58,7 +58,7 @@ def render() -> None:
 
     help_text = (
         "💡 Cara menggunakan AI Assistance:\n\n"
-        "1. Pastikan Gemini API Key sudah diisi di sidebar (panel kiri).\n"
+        "1. Pastikan Gemini API Key sudah diisi (lihat status di atas).\n"
         "2. Ketik instruksi analisis atau visualisasi di kotak chat di bawah halaman ini.\n"
         "3. Tekan **Enter** untuk mengirim instruksi ke Gemini AI.\n\n"
         "Contoh instruksi:\n"
