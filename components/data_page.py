@@ -76,7 +76,7 @@ def render() -> None:
             "❓",
             help=help_text,
             key="ai_assistance_help",
-            use_container_width=True,
+            width="stretch",
         )
 
     st.caption(

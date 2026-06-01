@@ -33,6 +33,7 @@ def render() -> None:
     """
     with st.sidebar:
         st.header("\U0001f511 Gemini API Key")
+        st.caption("Masukkan API Key untuk mengaktifkan fitur AI")
 
         # Initialise from environment variable if the key has not been set yet.
         if "api_key" not in st.session_state:
@@ -76,7 +77,7 @@ def render() -> None:
 
             if st.button(
                 "\U0001f504 Reset Sesi",
-                use_container_width=True,
+                width="stretch",
                 type="secondary",
                 help="Hapus data dan riwayat chat. API Key tetap tersimpan.",
             ):

@@ -214,14 +214,20 @@ st.markdown(
         color: white !important;
     }
 
-    /* ── Ensure sidebar collapse/expand button is ALWAYS visible ──────────── */
-    [data-testid="stSidebar"] [data-testid="stSidebarCollapseButton"],
-    [data-testid="stSidebarCollapsedControl"] {
+    /* ── Ensure sidebar toggle buttons are ALWAYS visible and accessible ── */
+    button[data-testid="stSidebarCollapseButton"],
+    [data-testid="stSidebarCollapsedControl"],
+    [data-testid="stSidebarCollapsedControl"] button {
         visibility: visible !important;
         display: flex !important;
         opacity: 1 !important;
         z-index: 999999 !important;
         pointer-events: auto !important;
+    }
+    
+    /* Make sure the sidebar itself is never hidden by any animation/transition */
+    [data-testid="stSidebar"] {
+        transition: none !important;
     }
 
     /* ── Animasi fade-in untuk konten ────────────────────────────────────── */
@@ -359,50 +365,10 @@ def main() -> None:
     """
     init_session_state()
 
-    # Custom sidebar indicator button
-    st.markdown(
-        """
-        <style>
-        .sidebar-indicator {
-            position: fixed;
-            top: 0.7rem;
-            left: 0.7rem;
-            z-index: 999998;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border: none;
-            border-radius: 50%;
-            width: 2.5rem;
-            height: 2.5rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.2rem;
-            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
-            cursor: pointer;
-            transition: all 0.3s ease;
-            text-decoration: none;
-        }
-        .sidebar-indicator:hover {
-            transform: scale(1.1);
-            box-shadow: 0 6px 16px rgba(102, 126, 234, 0.5);
-        }
-        /* Hide when sidebar is already open */
-        [data-testid="stSidebar"][aria-expanded="true"] ~ .main .sidebar-indicator {
-            opacity: 0;
-            pointer-events: none;
-        }
-        </style>
-        <div class="sidebar-indicator" title="Buka Sidebar — Masukkan API Key" onclick="
-            const btn = window.parent.document.querySelector('[data-testid=\\'stSidebarCollapsedControl\\'] button');
-            if (btn) btn.click();
-        ">🔑</div>
-        """,
-        unsafe_allow_html=True,
-    )
+    # Render sidebar FIRST to ensure it's always visible and accessible
+    sidebar.render()
 
     _render_app_header()
-    sidebar.render()
 
     if st.session_state.df is None:
         landing_page.render()
